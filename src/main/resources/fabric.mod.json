@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "virtualcalculator",
+  "version": "${version}",
+
+  "name": "VirtualCalculator",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "All-Rights-Reserved",
+  "icon": "assets/virtualcalculator/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": ["barkos.virtualcalculator.client.VirtualcalculatorDataGenerator"],
+    "client": ["barkos.virtualcalculator.client.VirtualcalculatorClient"],
+    "main": ["barkos.virtualcalculator.Virtualcalculator"]
+  },
+
+  "mixins": [
+    "virtualcalculator.mixins.json"
+    ,{
+      "config": "virtualcalculator.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
