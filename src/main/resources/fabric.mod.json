@@ -13,9 +13,8 @@
 
   "environment": "client",
   "entrypoints": {
-    "fabric-datagen": ["barkos.virtualcalculator.client.VirtualcalculatorDataGenerator"],
-    "client": ["barkos.virtualcalculator.client.VirtualcalculatorClient"],
-    "main": ["barkos.virtualcalculator.Virtualcalculator"]
+    "client": ["barkos.virtualcalculator.client.VirtualCalculatorClient"],
+    "main": ["barkos.virtualcalculator.VirtualCalculator"]
   },
 
   "mixins": [
