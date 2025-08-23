@@ -1,7 +1,6 @@
 package barkos.virtualcalculator.client;
 
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -19,7 +18,7 @@ public class CalculatorScreen extends Screen {
     );
 
     CalculatorScreen() {
-        super(Component.literal("Calculator"));
+        super(Text.literal("Calculator"));
     }
 
     @Override
@@ -70,7 +69,15 @@ public class CalculatorScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderBackground(context);
 
+        int startX = this.width / 2 - 50;
+        int startY = this.height / 2 - 60;
+
+        context.fill(startX, startY - 20, startX + 120, startY, 0xFF202020);
+        context.drawTextWithShadow(this.textRenderer, displayText, startX + 2, startY - 15, 0xFFFFFF);
+
+        super.render(context, mouseX, mouseY, dalta);
     }
 
     @Override
@@ -78,6 +85,7 @@ public class CalculatorScreen extends Screen {
         return false; // Game not pause
     }
 
+    // TODO: Rewrite
     private String evaluateExpression(String expression) {
         try {
             ScriptEngineManager manager = new ScriptEngineManager();
