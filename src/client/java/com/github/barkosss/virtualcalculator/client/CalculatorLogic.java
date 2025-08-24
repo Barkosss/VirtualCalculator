@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-// TODO: -1-1 => Error
 public class CalculatorLogic {
     private static final Stack<Object> stack = new Stack<>();
     private static final List<Object> heap = new ArrayList<>();
@@ -174,9 +173,21 @@ public class CalculatorLogic {
         return integers.getFirst();
     }
 
-    // TODO: Fix
     private static boolean bracketsFilter(List<String> expression) {
-        return true;
+        int open = 0;
+        int close = 0;
+        for (String s : expression) {
+            if (s.equals(")")) {
+                if (open == 0) {
+                    return false;
+                }
+                close++;
+            } else if (s.equals("(")) {
+                open++;
+            }
+        }
+
+        return open == close;
     }
 
     // TODO: Fix
