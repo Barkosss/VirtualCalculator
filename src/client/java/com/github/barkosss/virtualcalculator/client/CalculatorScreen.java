@@ -28,8 +28,8 @@ public class CalculatorScreen extends Screen {
     public void init() {
         super.init();
 
-        int startX = this.width / 2 - 50;
-        int startY = this.height / 2 - 50;
+        int startX = this.width / 2 - 60;
+        int startY = this.height / 2 - 70;
 
         for (int i = 0; i < buttons.size(); i++) {
             int x = startX + (i % 4) * 30;
@@ -39,7 +39,7 @@ public class CalculatorScreen extends Screen {
             this.addRenderableWidget(Button.builder(
                     Component.literal(label),
                     btn -> onButtonClicked(label)
-            ).pos(x, y).size(28, 20).build());
+            ).pos(x, y).size(30, 20).build());
         }
     }
 
@@ -79,10 +79,10 @@ public class CalculatorScreen extends Screen {
                 }
             }
 
-            case "clear" -> displayText = "0";
+            case "clear" -> displayText = "";
             case "del" -> {
                 if (displayText.isEmpty() || displayText.equals("Error")) {
-                    displayText = "0";
+                    displayText = "";
                 } else {
                     displayText = displayText.substring(0, displayText.length() - 1);
                 }
@@ -132,7 +132,6 @@ public class CalculatorScreen extends Screen {
         Minecraft.getInstance().setScreen(null);
     }
 
-    // TODO: Rewrite
     private String evaluateExpression(String expression) {
         try {
             Double result = CalculatorLogic.execute(expression);
