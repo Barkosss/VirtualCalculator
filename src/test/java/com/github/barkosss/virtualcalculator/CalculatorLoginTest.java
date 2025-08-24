@@ -61,7 +61,7 @@ public class CalculatorLoginTest {
     @Test // TODO: Negative
     void fourthCorrectBracketsPositive() {
         String expression = "((-1) * -5 * 2)";
-        Double result = CalculatorLogic.execute(expression); // <-- For input string: "("
+        Double result = CalculatorLogic.execute(expression);
 
         assert result != null; // true
         assert Objects.equals(result, 10.0); // true
