@@ -57,7 +57,6 @@ public class CalculatorLogic {
                 }
 
                 case ")": {
-
                     if (stack.search("(") == 0) {
                         return null;
                     }
@@ -66,28 +65,28 @@ public class CalculatorLogic {
                         return null;
                     }
 
-                    while (!stack.isEmpty() && stack.getLast().equals("(")) {
+                    while (!stack.isEmpty() && !stack.peek().equals("(")) {
                         heap.add(stack.pop());
                     }
 
-                    stack.pop();
+                    if (!stack.isEmpty()) {
+                        stack.pop();
+                    }
                     break;
                 }
 
                 case "-": {
 
                     // If negative number
-                    if (index == 0 || Character.isDigit((char) Double.parseDouble(expressions.get(index - 1))) && !Character.isDigit((char) Double.parseDouble(expressions.get(index + 1)))) {
+                    if (index == 0 || !Character.isDigit(expressions.get(index - 1).charAt(0)) && Character.isDigit(expressions.get(index + 1).charAt(0))) {
                         heap.add(-1 * Double.parseDouble(expressions.get(index + 1)));
                         index++;
                         break;
                     }
                 }
 
-                case "+": {
-                }
-                case "*": {
-                }
+                case "+":
+                case "*":
                 case "/": {
                     if (stack.isEmpty() || priority.get(expressions.get(index)) > priority.get(stack.getLast())) { // TODO: Fix
                         stack.push(expressions.get(index));
