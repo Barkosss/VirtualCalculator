@@ -189,13 +189,39 @@ public class CalculatorLogic {
         return open == close;
     }
 
-    // TODO: Fix
     private static boolean correctExpression(List<String> expression) {
-//        for (int index = 0; index <  expression.length; index++) {
-//            if ("-+*/^".contains(expression.get(index)) && "-+*/^".contains(expression.get(index + 1))) {
-//                return false;
-//            }
-//        }
+        if (expression.isEmpty()) {
+            return false;
+        }
+
+        int size = expression.size();
+
+        String first = expression.getFirst();
+        if ("+*/^".contains(first) || (first.equals("-") && size > 1 && !isNumber(expression.get(1)))) {
+            return false;
+        }
+
+        String last = expression.getLast();
+        if ("-+*/^".contains(last)) {
+            return false;
+        }
+
+        for (int index = 0; index < size - 1; index++) {
+            String curr = expression.get(index);
+            String next = expression.get(index + 1);
+
+            if ("-+*/^".contains(curr) && "-+*/^".contains(next)) {
+                if (curr.equals("-") && isNumber(next)) {
+                    continue;
+                }
+
+                if (isOperator(curr) && next.equals("-") && index + 2 < size && isNumber(expression.get(index + 2))) {
+                    continue;
+                }
+
+                return false;
+            }
+        }
 
         return true;
     }
@@ -206,5 +232,18 @@ public class CalculatorLogic {
             result = result.replace(searchList[i], replacementList[i]);
         }
         return result;
+    }
+
+    private static boolean isOperator(String token) {
+        return "-+*/^".contains(token);
+    }
+
+    private static boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
