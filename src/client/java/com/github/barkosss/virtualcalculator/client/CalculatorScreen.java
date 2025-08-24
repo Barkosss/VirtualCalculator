@@ -1,4 +1,4 @@
-package barkos.virtualcalculator.client;
+package com.github.barkosss.virtualcalculator.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

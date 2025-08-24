@@ -13,8 +13,8 @@
 
   "environment": "client",
   "entrypoints": {
-    "client": ["barkos.virtualcalculator.client.VirtualCalculatorClient"],
-    "main": ["barkos.virtualcalculator.VirtualCalculator"]
+    "client": ["com.github.barkosss.virtualcalculator.client.VirtualCalculatorClient"],
+    "main": ["com.github.barkosss.virtualcalculator.VirtualCalculator"]
   },
 
   "mixins": [
