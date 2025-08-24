@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,27 +21,54 @@ public class CalculatorScreen extends Screen {
             "Clear", "(", ")", "Del"
     );
 
-    CalculatorScreen() {
+    private static final int PANEL_WIDTH = 80;
+    private ScrollArea noteScrollArea, historyScrollArea;
+
+    public CalculatorScreen() {
         super(Component.literal("Calculator"));
+        CalculatorData.getInstance().load();
     }
 
     @Override
     public void init() {
         super.init();
 
-        int startX = this.width / 2 - 60;
+        int centerX = this.width / 2;
         int startY = this.height / 2 - 70;
 
-        for (int i = 0; i < buttons.size(); i++) {
-            int x = startX + (i % 4) * 30;
-            int y = startY + (i / 4) * 30;
-            String label = buttons.get(i);
+        // --- Left panel: Notebook ---
+        int leftX = 10;
+        int rightX = this.width - PANEL_WIDTH - 10;
+
+        // Button "New note"
+        this.addRenderableWidget(Button.builder(Component.literal("+"), btn -> {
+            CalculatorData.getInstance().createNewNote();
+            this.init();
+        }).pos(leftX, startY - 20).size(20, 12).build());
+
+        // Scroll-square for note
+        noteScrollArea = new ScrollArea(leftX, startY, PANEL_WIDTH, 150, font);
+
+        // --- Center: buttons of calc ---
+        int calcStartX = centerX - 60;
+        int buttonSize = 30;
+        int buttonSpacing = 6;
+        for (int index = 0; index < buttons.size(); index++) {
+            int x = calcStartX + (index % 4) * (buttonSize + buttonSpacing);
+            int y = startY + (index / 4) * (buttonSize + buttonSpacing);
+            String label = buttons.get(index);
 
             this.addRenderableWidget(Button.builder(
                     Component.literal(label),
-                    btn -> onButtonClicked(label)
-            ).pos(x, y).size(30, 20).build());
+                    btn -> {
+                        onButtonClicked(label);
+                        this.setFocused(null);
+                    }
+            ).pos(x, y).size(buttonSize, buttonSize).build());
         }
+
+        // --- Right panel: History ---
+        historyScrollArea = new ScrollArea(rightX, startY, PANEL_WIDTH, 150, font);
     }
 
     @Override
@@ -72,7 +100,11 @@ public class CalculatorScreen extends Screen {
         switch (label.toLowerCase()) {
             case "=" -> {
                 try {
-                    displayText = evaluateExpression(displayText);
+                    String expression = displayText;
+                    String result = evaluateExpression(displayText);
+                    displayText = result;
+
+                    CalculatorData.getInstance().addHistoryEntry(expression, result);
                 } catch (Exception ex) {
                     System.out.println("onButtonClicked failed: " + ex.getMessage());
                     displayText = "Error";
@@ -97,29 +129,109 @@ public class CalculatorScreen extends Screen {
                 }
             }
         }
+        this.setFocused(false);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         this.renderBackground(graphics, mouseX, mouseY, delta);
 
-        int startX = this.width / 2 - 60;
+        super.render(graphics, mouseX, mouseY, delta);
+
+        int centerX = this.width / 2;
         int startY = this.height / 2 - 70;
 
-        graphics.fill(startX, startY - 20, startX + 120, startY, 0xFF2B2B2B);
+        // --- Input Field ---
+        graphics.fill(centerX - 60, startY - 20, centerX + 60, startY, 0xFF2B2B2B);
+        graphics.drawString(font, displayText, centerX - 58, startY - 15, 0xFFFFFF, false);
 
-        String display = displayText.length() > 16 ? "..." + displayText.substring(Math.max(0, displayText.length() - 13)) : displayText;
+        // --- Left panel: Notes ---
+        int leftX = 10;
+        int rightX = this.width - PANEL_WIDTH - 10;
 
-        graphics.drawString(
-                this.font,
-                display,
-                startX + 4,
-                startY - 15,
-                0xFFFFFF,
-                false
-        );
+        graphics.fill(leftX, startY, leftX + PANEL_WIDTH, startY + 150, 0xFF1E1E1E);
+        graphics.drawString(font, "Notes", leftX + 2, startY - 10, 0xAAAAAA, false);
 
-        super.render(graphics, mouseX, mouseY, delta);
+        noteScrollArea.setContent(splitIntoLines(CalculatorData.getInstance().getCurrentNote()));
+        noteScrollArea.setYOffset(noteScrollY);
+        noteScrollArea.render(graphics);
+
+        // --- Right panel: History ---
+        graphics.fill(rightX, startY, rightX + PANEL_WIDTH, startY + 150, 0xFF1E1E1E);
+        graphics.drawString(font, "History", rightX + 2, startY - 10, 0xAAAAAA, false);
+
+        this.addRenderableWidget(Button.builder(
+                Component.literal("Clear"),
+                btn -> {
+                    CalculatorData.getInstance().clearHistory();
+                    this.init();
+                }
+        ).pos(rightX + PANEL_WIDTH - 40, startY - 20).size(40, 12).build());
+        historyScrollArea.setContent(getHistoryLines());
+        historyScrollArea.setYOffset(historyScrollY);
+        historyScrollArea.render(graphics);
+    }
+
+    private List<String> getHistoryLines() {
+        return CalculatorData.getInstance().getHistory();
+    }
+
+    private List<String> splitIntoLines(String text) {
+        List<String> lines = new ArrayList<>();
+        if (text.isEmpty()) {
+            lines.add("");
+            return lines;
+        }
+
+        String[] words = text.split(" ");
+        StringBuilder line = new StringBuilder();
+        for (String word : words) {
+            String testLine = line.isEmpty() ? word : line + " " + word;
+            if (font.width(testLine) > 72 && !line.isEmpty()) {
+                lines.add(line.toString());
+                line = new StringBuilder(word);
+            } else {
+                line = new StringBuilder(testLine);
+            }
+        }
+        if (!line.isEmpty()) lines.add(line.toString());
+        return lines;
+    }
+
+    // --- Control scroll ---
+    private int noteScrollY = 0;
+    private int historyScrollY = 0;
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        if (noteScrollArea.isMouseOver(mouseX, mouseY)) {
+            noteScrollY = Math.max(0, noteScrollY - (int) (deltaY * 10));
+            return true;
+        }
+        if (historyScrollArea.isMouseOver(mouseX, mouseY)) {
+            historyScrollY = Math.max(0, historyScrollY - (int) (deltaY * 10));
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int leftX = 10;
+        int startY = this.height / 2 - 70;
+        if (mouseX >= leftX && mouseX < leftX + PANEL_WIDTH) {
+            int index = (int) ((mouseY - startY) / 12);
+            int i = 0;
+            for (String noteId : CalculatorData.getInstance().getNoteIds()) {
+                if (i == index) {
+                    CalculatorData.getInstance().setCurrentNote(noteId);
+                    this.init();
+                    return true;
+                }
+                i++;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -129,7 +241,10 @@ public class CalculatorScreen extends Screen {
 
     @Override
     public void onClose() {
+        CalculatorData.getInstance().setCurrentNote(noteScrollArea.getText());
+        CalculatorData.getInstance().save();
         Minecraft.getInstance().setScreen(null);
+        super.onClose();
     }
 
     private String evaluateExpression(String expression) {
