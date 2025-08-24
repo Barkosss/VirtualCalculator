@@ -1,4 +1,4 @@
-package barkos.virtualcalculator.client;
+package com.github.barkosss.virtualcalculator.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,9 +32,8 @@ public class CalculatorLogic {
         stack.clear();
         heap.clear();
 
-        System.out.println("Expression: " + expression);
         expression = expression.replaceAll("\\s+", "");
-        expression = replaceAll(expression);
+        expression = replaceAll(expression).trim();
         List<String> expressions = List.of(expression.split("\\s+"));
 
         if (!bracketsFilter(expressions)) {
@@ -47,7 +46,6 @@ public class CalculatorLogic {
 
         for (int index = 0; index < expressions.size(); index++) {
 
-            System.out.println("Switch: " + expressions.get(index));
             switch (expressions.get(index)) {
                 case "(": {
 
@@ -92,7 +90,6 @@ public class CalculatorLogic {
                 case "*": {
                 }
                 case "/": {
-                    System.out.println("Case + - /: " + expressions.get(index));
                     if (stack.isEmpty() || priority.get(expressions.get(index)) > priority.get(stack.getLast())) { // TODO: Fix
                         stack.push(expressions.get(index));
                     } else {
@@ -131,14 +128,10 @@ public class CalculatorLogic {
         Stack<Double> integers = new Stack<>();
 
         while (!heap.isEmpty()) {
-            System.out.println("heap.getFirst(): " + heap.getFirst());
             Object element = heap.removeFirst();
 
-            System.out.println("element: " + element);
             if (element instanceof Double) {
-                System.out.println(1);
                 integers.push((double) element);
-                System.out.println(2);
                 continue;
             }
 
@@ -178,7 +171,6 @@ public class CalculatorLogic {
             }
         }
 
-        System.out.println("integers.getFirst(): " + integers.getFirst());
         return integers.getFirst();
     }
 
