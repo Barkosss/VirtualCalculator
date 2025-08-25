@@ -3,14 +3,23 @@ package com.github.barkosss.virtualcalculator.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
 public class CalculatorScreen extends Screen {
+    private enum Mode {
+        CALCULATOR,
+        NOTE_EDIT
+    }
+
+    private Mode currentMode = Mode.CALCULATOR;
+
     private String displayText = "0";
     private final List<String> buttons = Arrays.asList(
             "7", "8", "9", "/",
@@ -22,6 +31,8 @@ public class CalculatorScreen extends Screen {
 
     private static final int PANEL_WIDTH = 80;
     private ScrollArea noteScrollArea, historyScrollArea;
+    private EditBox noteInput;
+
 
     public CalculatorScreen() {
         super(Component.literal("Calculator"));
@@ -31,6 +42,7 @@ public class CalculatorScreen extends Screen {
     @Override
     public void init() {
         super.init();
+        this.clearWidgets();
 
         int centerX = this.width / 2;
         int startY = this.height / 2 - 70;
@@ -41,6 +53,36 @@ public class CalculatorScreen extends Screen {
 
         // Scroll-square for note
         noteScrollArea = new ScrollArea(leftX, startY, PANEL_WIDTH, 150, font);
+
+        noteInput = new EditBox(
+                this.font,
+                10,
+                startY,
+                PANEL_WIDTH,
+                150,
+                Component.literal("Note")
+        );
+
+        noteInput.setMaxLength(500);
+        noteInput.setValue(CalculatorData.getInstance().getCurrentNote());
+        noteInput.setBordered(true);
+        noteInput.setResponder(text -> CalculatorData.getInstance().setCurrentNote(text));
+        this.addRenderableWidget(noteInput);
+
+        Button modeButton = Button.builder(getModeLabel(), btn -> {
+            if (currentMode == Mode.CALCULATOR) {
+                currentMode = Mode.NOTE_EDIT;
+                this.setFocused(noteInput);
+            } else {
+                currentMode = Mode.CALCULATOR;
+                CalculatorData.getInstance().setCurrentNote(noteInput.getValue());
+                CalculatorData.getInstance().save();
+                this.setFocused(null);
+            }
+            btn.setMessage(getModeLabel());
+        }).pos(leftX, startY - 20).size(100, 12).build();
+
+        this.addRenderableWidget(modeButton);
 
         // --- Center: buttons of calc ---
         int calcStartX = centerX - 60;
@@ -64,27 +106,41 @@ public class CalculatorScreen extends Screen {
         historyScrollArea = new ScrollArea(rightX, startY, PANEL_WIDTH, 150, font);
     }
 
+    private Component getModeLabel() {
+        return Component.literal("Mode: " + (currentMode == Mode.CALCULATOR ? "Calculator" : "Notes"));
+    }
+
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifies) {
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-            onButtonClicked("=");
-            return true;
-        } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-            onButtonClicked("Del");
-            return true;
-        } else if (keyCode == GLFW.GLFW_KEY_C) {
-            onButtonClicked("Clear");
-            return true;
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (currentMode == Mode.CALCULATOR) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                onButtonClicked("=");
+                return true;
+            } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+                onButtonClicked("Del");
+                return true;
+            } else if (keyCode == GLFW.GLFW_KEY_C) {
+                onButtonClicked("Clear");
+                return true;
+            }
+        } else if (currentMode == Mode.NOTE_EDIT) {
+            if (noteInput.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
         }
-        return super.keyPressed(keyCode, scanCode, modifies);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        String allowedChars = "0123456789.=/*-+()";
-        if (allowedChars.indexOf(chr) != -1) {
-            onButtonClicked(String.valueOf(chr));
-            return true;
+        if (currentMode == Mode.CALCULATOR) {
+            String allowedChars = "0123456789.=/*-+()";
+            if (allowedChars.indexOf(chr) != -1) {
+                onButtonClicked(String.valueOf(chr));
+                return true;
+            }
+        } else if (currentMode == Mode.NOTE_EDIT) {
+            return noteInput.charTyped(chr, modifiers);
         }
         return super.charTyped(chr, modifiers);
     }
@@ -144,6 +200,7 @@ public class CalculatorScreen extends Screen {
 
         graphics.fill(leftX, startY, leftX + PANEL_WIDTH, startY + 150, 0xFF1E1E1E);
         graphics.drawString(font, "Notes", leftX + 2, startY - 10, 0xAAAAAA, false);
+        noteInput.render(graphics, mouseX, mouseY, delta);
 
         noteScrollArea.setYOffset(noteScrollY);
         noteScrollArea.render(graphics);
@@ -192,6 +249,7 @@ public class CalculatorScreen extends Screen {
 
     @Override
     public void onClose() {
+        CalculatorData.getInstance().setCurrentNote(noteInput.getValue());
         CalculatorData.getInstance().save();
         Minecraft.getInstance().setScreen(null);
         super.onClose();
@@ -199,10 +257,10 @@ public class CalculatorScreen extends Screen {
 
     private String evaluateExpression(String expression) {
         try {
-            Double result = CalculatorLogic.execute(expression);
+            BigDecimal result = CalculatorLogic.execute(expression);
 
             if (result == null) return "Error";
-            if (result == Math.round(result)) {
+            if (result.intValue() == Math.round(result.doubleValue())) {
                 return String.valueOf(result.intValue());
             } else {
                 return String.format("%.6f", result).replaceAll("0*$", "").replaceAll("\\.$", "");

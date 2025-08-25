@@ -12,6 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
+import java.math.BigDecimal;
+
 public class VirtualCalculatorClient implements ClientModInitializer {
     private static final String KEY_CATEGORY = "key.categories.calculator";
     private static final String KEY_OPEN = "key.calculator.open";
@@ -39,12 +41,12 @@ public class VirtualCalculatorClient implements ClientModInitializer {
                         .executes(context -> {
                             String expression = context.getArgument("expression", String.class);
 
-                            Double answer = CalculatorLogic.execute(expression);
+                            BigDecimal answer = CalculatorLogic.execute(expression);
 
                             String result;
                             if (answer == null) {
                                 result = "Error";
-                            } else if (answer == Math.round(answer)) {
+                            } else if (answer.intValue() == Math.round(answer.doubleValue())) {
                                 result = String.valueOf(answer.intValue());
                             } else {
                                 result = String.format("%.6f", answer).replaceAll("0*$", "").replaceAll("\\.$", "");

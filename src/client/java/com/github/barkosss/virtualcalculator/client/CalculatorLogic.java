@@ -1,5 +1,6 @@
 package com.github.barkosss.virtualcalculator.client;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public class CalculatorLogic {
         return map;
     }
 
-    public static Double execute(String expression) {
+    public static BigDecimal execute(String expression) {
         stack.clear();
         heap.clear();
 
@@ -79,7 +80,8 @@ public class CalculatorLogic {
 
                     // If negative number
                     if (index == 0 || !Character.isDigit(expressions.get(index - 1).charAt(0)) && Character.isDigit(expressions.get(index + 1).charAt(0))) {
-                        heap.add(-1 * Double.parseDouble(expressions.get(index + 1)));
+                        // TODO: bug
+                        heap.add(new  BigDecimal(expressions.get(index - 1)).multiply(new BigDecimal(-1)));
                         index++;
                         break;
                     }
@@ -109,7 +111,7 @@ public class CalculatorLogic {
                     String number = expressions.get(index);
 
                     try {
-                        heap.add(Double.parseDouble(number));
+                        heap.add(BigDecimal.valueOf(Long.parseLong(number)));
                     } catch (Exception ex) {
                         return null;
                     }
@@ -123,47 +125,47 @@ public class CalculatorLogic {
             heap.add(stack.pop());
         }
 
-        Stack<Double> integers = new Stack<>();
+        Stack<BigDecimal> integers = new Stack<>();
 
         while (!heap.isEmpty()) {
             Object element = heap.removeFirst();
 
-            if (element instanceof Double) {
-                integers.push((double) element);
+            if (element instanceof BigDecimal) {
+                integers.push((BigDecimal)  element);
                 continue;
             }
 
             switch (String.valueOf(element)) {
                 case "+": {
-                    integers.push(integers.pop() + integers.pop());
+                    integers.push(integers.pop().add(integers.pop()));
                     break;
                 }
 
-                case "-": {
-                    integers.push(-1 * integers.pop() + integers.pop());
+                case "-": {;
+                    integers.push(integers.pop().subtract(integers.pop()));
                     break;
                 }
 
                 case "*": {
-                    integers.push(integers.pop() * integers.pop());
+                    integers.push(integers.pop().multiply(integers.pop()));
                     break;
                 }
 
                 case "/": {
-                    double two = integers.pop();
-                    double one = integers.pop();
-                    if (two == 0) {
+                    BigDecimal two = integers.pop();
+                    BigDecimal one = integers.pop();
+                    if (two.equals(new BigDecimal(0))) {
                         return null;
                     }
 
-                    integers.push(one / two);
+                    integers.push(one.divide(two));
                     break;
                 }
 
                 case "^": {
-                    double two = integers.pop();
-                    double one = integers.pop();
-                    integers.push(Math.pow(one, two));
+                    BigDecimal two = integers.pop();
+                    BigDecimal one = integers.pop();
+                    integers.push(one.pow(two.intValue()));
                     break;
                 }
             }
@@ -240,7 +242,7 @@ public class CalculatorLogic {
 
     private static boolean isNumber(String token) {
         try {
-            Double.parseDouble(token);
+            BigDecimal.valueOf(Long.parseLong(token));
             return true;
         } catch (NumberFormatException e) {
             return false;

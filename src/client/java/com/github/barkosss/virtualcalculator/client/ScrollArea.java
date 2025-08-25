@@ -27,10 +27,6 @@ public class ScrollArea {
         this.yOffset = yOffset;
     }
 
-    public int getYOffset() {
-        return this.yOffset;
-    }
-
     public boolean isMouseOver(double mouseX, double mouseY) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
