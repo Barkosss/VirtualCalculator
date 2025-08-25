@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,12 +38,6 @@ public class CalculatorScreen extends Screen {
         // --- Left panel: Notebook ---
         int leftX = 10;
         int rightX = this.width - PANEL_WIDTH - 10;
-
-        // Button "New note"
-        this.addRenderableWidget(Button.builder(Component.literal("+"), btn -> {
-            CalculatorData.getInstance().createNewNote();
-            this.init();
-        }).pos(leftX, startY - 20).size(20, 12).build());
 
         // Scroll-square for note
         noteScrollArea = new ScrollArea(leftX, startY, PANEL_WIDTH, 150, font);
@@ -142,7 +135,7 @@ public class CalculatorScreen extends Screen {
         int startY = this.height / 2 - 70;
 
         // --- Input Field ---
-        graphics.fill(centerX - 60, startY - 20, centerX + 60, startY, 0xFF2B2B2B);
+        graphics.fill(centerX - 60, startY - 20, centerX + 80, startY - 5, 0xFF2B2B2B);
         graphics.drawString(font, displayText, centerX - 58, startY - 15, 0xFFFFFF, false);
 
         // --- Left panel: Notes ---
@@ -152,7 +145,6 @@ public class CalculatorScreen extends Screen {
         graphics.fill(leftX, startY, leftX + PANEL_WIDTH, startY + 150, 0xFF1E1E1E);
         graphics.drawString(font, "Notes", leftX + 2, startY - 10, 0xAAAAAA, false);
 
-        noteScrollArea.setContent(splitIntoLines(CalculatorData.getInstance().getCurrentNote()));
         noteScrollArea.setYOffset(noteScrollY);
         noteScrollArea.render(graphics);
 
@@ -166,7 +158,7 @@ public class CalculatorScreen extends Screen {
                     CalculatorData.getInstance().clearHistory();
                     this.init();
                 }
-        ).pos(rightX + PANEL_WIDTH - 40, startY - 20).size(40, 12).build());
+        ).pos(rightX + PANEL_WIDTH - 40, startY - 15).size(40, 12).build());
         historyScrollArea.setContent(getHistoryLines());
         historyScrollArea.setYOffset(historyScrollY);
         historyScrollArea.render(graphics);
@@ -174,28 +166,6 @@ public class CalculatorScreen extends Screen {
 
     private List<String> getHistoryLines() {
         return CalculatorData.getInstance().getHistory();
-    }
-
-    private List<String> splitIntoLines(String text) {
-        List<String> lines = new ArrayList<>();
-        if (text.isEmpty()) {
-            lines.add("");
-            return lines;
-        }
-
-        String[] words = text.split(" ");
-        StringBuilder line = new StringBuilder();
-        for (String word : words) {
-            String testLine = line.isEmpty() ? word : line + " " + word;
-            if (font.width(testLine) > 72 && !line.isEmpty()) {
-                lines.add(line.toString());
-                line = new StringBuilder(word);
-            } else {
-                line = new StringBuilder(testLine);
-            }
-        }
-        if (!line.isEmpty()) lines.add(line.toString());
-        return lines;
     }
 
     // --- Control scroll ---
@@ -216,32 +186,12 @@ public class CalculatorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int leftX = 10;
-        int startY = this.height / 2 - 70;
-        if (mouseX >= leftX && mouseX < leftX + PANEL_WIDTH) {
-            int index = (int) ((mouseY - startY) / 12);
-            int i = 0;
-            for (String noteId : CalculatorData.getInstance().getNoteIds()) {
-                if (i == index) {
-                    CalculatorData.getInstance().setCurrentNote(noteId);
-                    this.init();
-                    return true;
-                }
-                i++;
-            }
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
     public boolean isPauseScreen() {
         return false; // Game not pause
     }
 
     @Override
     public void onClose() {
-        CalculatorData.getInstance().setCurrentNote(noteScrollArea.getText());
         CalculatorData.getInstance().save();
         Minecraft.getInstance().setScreen(null);
         super.onClose();

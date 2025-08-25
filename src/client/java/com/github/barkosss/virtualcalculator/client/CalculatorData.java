@@ -12,54 +12,18 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CalculatorData {
-    private Map<String, String> notes = new HashMap<>();
     private List<String> history = new ArrayList<>();
 
-    private String currentNoteId = "note_1";
     private static final CalculatorData instance = new CalculatorData();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static CalculatorData getInstance() {
         return instance;
-    }
-
-    public String getCurrentNote() {
-        return notes.computeIfAbsent(this.currentNoteId, key -> "");
-    }
-
-    public void setCurrentNote(String text) {
-        notes.put(this.currentNoteId, text);
-    }
-
-    public String getCurrentNoteId() {
-        return this.currentNoteId;
-    }
-
-    public void setCurrentNoteId(String id) {
-        this.currentNoteId = id;
-    }
-
-    public Set<String> getNoteIds() {
-        return notes.keySet();
-    }
-
-    public void createNewNote() {
-        String newId;
-        int index = 1;
-        do {
-            newId = "note_" + index++;
-        } while(notes.containsKey(newId));
-
-        notes.put(newId, "");
-        currentNoteId = newId;
     }
 
     public List<String> getHistory() {
@@ -92,16 +56,10 @@ public class CalculatorData {
         if (Files.exists(path)) {
             try (Reader reader = new FileReader(path.toFile())) {
                 CalculatorData data = gson.fromJson(reader, CalculatorData.class);
-                this.notes = data.notes;
                 this.history = data.history;
-                this.currentNoteId = data.currentNoteId != null ? data.currentNoteId : "note_1";
             } catch (IOException ex) {
                 Logger.getLogger(CalculatorData.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-
-        if (notes.isEmpty()) {
-            createNewNote();
         }
     }
 }
