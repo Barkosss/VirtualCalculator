@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 public class CalculatorData {
     private List<String> history = new ArrayList<>();
+    private String currentNote = "";
 
     private static final CalculatorData instance = new CalculatorData();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -39,6 +40,14 @@ public class CalculatorData {
         history.clear();
     }
 
+    public String getCurrentNote() {
+        return currentNote;
+    }
+
+    public void setCurrentNote(String note) {
+        this.currentNote = note;
+    }
+
     public void save() {
         Path path = Minecraft.getInstance().gameDirectory.toPath().resolve("config/virtualcalculator/data.json");
         try {
@@ -56,7 +65,8 @@ public class CalculatorData {
         if (Files.exists(path)) {
             try (Reader reader = new FileReader(path.toFile())) {
                 CalculatorData data = gson.fromJson(reader, CalculatorData.class);
-                this.history = data.history;
+                this.history = data.history != null ? data.history : new ArrayList<>();
+                this.currentNote = data.currentNote != null ? data.currentNote : "";
             } catch (IOException ex) {
                 Logger.getLogger(CalculatorData.class.getName()).log(Level.SEVERE, null, ex);
             }
