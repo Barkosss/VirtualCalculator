@@ -81,7 +81,7 @@ public class CalculatorLogic {
                     // If negative number
                     if (index == 0 || !Character.isDigit(expressions.get(index - 1).charAt(0)) && Character.isDigit(expressions.get(index + 1).charAt(0))) {
                         // TODO: bug
-                        heap.add(new  BigDecimal(expressions.get(index - 1)).multiply(new BigDecimal(-1)));
+                        heap.add(new BigDecimal(expressions.get(index + 1)).multiply(new BigDecimal(-1)));
                         index++;
                         break;
                     }
