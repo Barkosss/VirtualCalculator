@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class CalculatorLoginTest {
+public class CalculatorLogicTest {
 
     @Test
     void addTwoNumberPositive() {
@@ -153,7 +153,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void twelfthTestPositive() {
+    void eleventhTestPositive() {
         String expression = "(((((((5 * (-3))))))))";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -162,7 +162,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void twentiethTestPositive() {
+    void twelfthTestPositive() {
         String expression = "(5 * 3 + ( -5 * 5 ) * 7 + 5)";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -171,7 +171,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void thirtiethTestNegative() {
+    void thirteenthTestNegative() {
         String expression = "(5 + 5) * 2s";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -179,7 +179,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void fortiethTestNegative() {
+    void fourteenthTestNegative() {
         String expression = "(5 + 5) * 2 +";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -187,7 +187,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void fiftiethTestNegative() {
+    void fifteenthTestNegative() {
         String expression = "() 5 + 5";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -195,7 +195,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void sixtiethTestNegative() {
+    void sixteenthTestNegative() {
         String expression = "(1 + 1 * 5 + 5 + 2 * 2";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -203,7 +203,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void seventiethTestNegative() {
+    void seventeenthTestNegative() {
         String expression = "(1 + 1 * 5( + 5) +) 2 * 2";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -211,7 +211,7 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void eightiethTestNegative() {
+    void eighteenthTestNegative() {
         String expression = "(1 + 1 * (5 + 5) +) 2 * 2";
         BigDecimal result = CalculatorLogic.execute(expression);
 
@@ -219,13 +219,136 @@ public class CalculatorLoginTest {
     }
 
     @Test
-    void ninetiethTestPositive() {
+    void nineteenthTestPositive() {
         String expression = "484528044530-10";
         BigDecimal result = CalculatorLogic.execute(expression);
 
         assert result != null;
-        // 484528044530 * -1 => -484528044520
-        System.out.println(result);
         assert Objects.equals(result, new BigDecimal(484528044520L));
     }
+
+    @Test
+    void twentiethTestPositive() {
+        String expression = "999999999999999999999999 + 1";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("1000000000000000000000000"));
+    }
+
+    @Test
+    void twentiethOneTestPositive() {
+        String expression = "0.0000001 * 0.0000001";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("0.00000000000001"));
+    }
+
+    @Test
+    void twentiethTwoTestPositive() {
+        String expression = "1 / 3";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert result.toPlainString().startsWith("0.3333");
+    }
+
+    @Test
+    void twentiethThreeTestNegative() {
+        String expression = "5 / 0";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result == null;
+    }
+
+    @Test
+    void twentiethFourTestPositive() {
+        String expression = "(-5) * (-3)";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("15"));
+    }
+
+    @Test
+    void twentiethFiveTestNegative() {
+        String expression = "   ";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, BigDecimal.ZERO);
+    }
+
+    @Test
+    void twentiethSixTestPositive() {
+        String expression = "2 + 3 * 4 - 6 / 2";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert result.compareTo(new BigDecimal("11")) == 0;
+    }
+
+    @Test
+    void twentiethSevenTestPositive() {
+        String expression = "(-2) * (3 + -4)";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("2"));
+    }
+
+    @Test
+    void twentiethEightTestPositive() {
+        String expression = "1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("55"));
+    }
+
+    @Test
+    void twentiethNineTestPositive() {
+        String expression = "0.1 + 0.02 + 0.003";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("0.123"));
+    }
+
+    @Test
+    void thirtiethTestPositive() {
+        String expression = "((((((((((1+1))))))))))";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("2"));
+    }
+
+    @Test
+    void thirtiethOneTestPositive() {
+        String expression = "10 - 2 * (3 + 1) / 2";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert result.compareTo(new BigDecimal("6")) == 0;
+    }
+
+    @Test
+    void thirtiethTwoTestPositive() {
+        String expression = "   5    +    3   ";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result != null;
+        assert Objects.equals(result, new BigDecimal("8"));
+    }
+
+    @Test
+    void thirtiethThreeTestNegative() {
+        String expression = "--5 + ---3";
+        BigDecimal result = CalculatorLogic.execute(expression);
+
+        assert result == null;
+    }
+
 }
