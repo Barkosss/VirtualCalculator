@@ -1,6 +1,7 @@
 package com.github.barkosss.virtualcalculator.client;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,11 @@ public class CalculatorLogic {
 
         expression = expression.replaceAll("\\s+", "");
         expression = replaceAll(expression).trim();
+
+        if (expression.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
         List<String> expressions = List.of(expression.split("\\s+"));
 
         if (!bracketsFilter(expressions)) {
@@ -111,7 +117,7 @@ public class CalculatorLogic {
                     String number = expressions.get(index);
 
                     try {
-                        heap.add(BigDecimal.valueOf(Long.parseLong(number)));
+                        heap.add(new BigDecimal(number));
                     } catch (Exception ex) {
                         return null;
                     }
@@ -141,8 +147,10 @@ public class CalculatorLogic {
                     break;
                 }
 
-                case "-": {;
-                    integers.push(integers.pop().subtract(integers.pop()));
+                case "-": {
+                    BigDecimal one = integers.pop();
+                    BigDecimal two = integers.pop();
+                    integers.push(two.subtract(one));
                     break;
                 }
 
@@ -158,7 +166,7 @@ public class CalculatorLogic {
                         return null;
                     }
 
-                    integers.push(one.divide(two));
+                    integers.push(one.divide(two, 6, MathContext.DECIMAL64.getRoundingMode()));
                     break;
                 }
 
@@ -242,7 +250,7 @@ public class CalculatorLogic {
 
     private static boolean isNumber(String token) {
         try {
-            BigDecimal.valueOf(Long.parseLong(token));
+            new BigDecimal(token);
             return true;
         } catch (NumberFormatException e) {
             return false;
